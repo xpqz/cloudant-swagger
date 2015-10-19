@@ -1,0 +1,37 @@
+swagger: '2.0'
+info:
+  version: 0.0.1
+  title: 'Cloudant'
+paths:
+  /{database}/{id}:
+    get:
+      description: |
+        Gets a document with **id** from **database**.
+        Optional query param of **rev** picks a specific revision.
+      parameters:
+        - name: database
+          in: path
+          description: Database
+          required: true
+          type: string
+        - name: id
+          in: path
+          description: Document id
+          required: true
+          type: string
+        - name: rev
+          in: query
+          description: Document revision
+          required: false
+          type: string
+      responses:
+        '200':
+          description: Successful response
+          schema:
+            title: Document
+            type: object
+            properties:
+              _id:
+                type: string
+              _rev:
+                type: string
