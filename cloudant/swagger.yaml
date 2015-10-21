@@ -2,6 +2,48 @@ swagger: '2.0'
 info:
   version: 0.0.1
   title: 'Cloudant'
+
+definitions:
+    Document:
+        required:
+            - _id
+            - _rev
+        properties:
+          _id:
+            type: string
+          _rev:
+            type: string
+          _deleted:
+            type: boolean
+          _attachments:
+            type: object
+          _conflicts:
+            type: array
+            items: object
+          _deleted_conflicts:
+            type: array
+            items: object
+          _local_seq:
+            type: string
+          _revs_info:
+            type: array
+            items: object
+          _revisions:
+            type: object
+    Error:
+        type: object
+        required:
+            - code
+            - error
+            - reason
+        properties:
+            code:
+                type: integer
+                format: int32
+            error:
+                type: string
+            reason:
+                type: string
 paths:
   /{database}/{id}:
     get:
@@ -14,24 +56,107 @@ paths:
           description: Database
           required: true
           type: string
+
         - name: id
           in: path
           description: Document id
           required: true
           type: string
+
+        - name: attachments
+          in: query
+          description: Set to true to include the attchment bodies in response. Default false.
+          required: false
+          type: boolean
+
+        - name: att_encoding_info
+          in: query
+          description: Set to true to include the attchment stubs in response if attachment is compressed. Default false.
+          required: false
+          type: boolean
+
+        - name: att_since
+          in: query
+          description: Set to true to include attchments only since since specified revisions. Optional.
+          required: false
+          type: array
+
+        - name: conflicts
+          in: query
+          description: Set to true to include the attchment stubs in response if attachment is compressed. Default false.
+          required: false
+          type: boolean
+
+        - name: deleted_conflicts
+          in: query
+          description: Set to true to include information about deleted conflict revisions. Default false.
+          required: false
+          type: boolean
+
+        - name: latest
+          in: query
+          description: Set to true to force the return of the current selected revision. Overrides **rev**. Default false.
+          required: false
+          type: boolean
+
+        - name: local_seq
+          in: query
+          description: Set to true to return the local update sequence id. Default false.
+          required: false
+          type: boolean
+
+        - name: meta
+          in: query
+          description: Short-hand for **conflicts**, **deleted_conflicts** and **open_revs** all set to true. Default false.
+          required: false
+          type: boolean
+
+        - name: open_revs
+          in: query
+          description: Retrieves documents of the listed leaf revisions. Also accepts value **all** to return all leaf revs. Optional.
+          required: false
+          type: array
+
         - name: rev
           in: query
           description: Document revision
           required: false
           type: string
+
+        - name: revs
+          in: query
+          description: Set to true to return list of all known doc revisions. Default false.
+          required: false
+          type: boolean
+
+        - name: revs_info
+          in: query
+          description: Set to true to retrieve details about all known doc revs. Optional.
+          required: false
+          type: boolean
+
       responses:
         '200':
           description: Successful response
           schema:
-            title: Document
-            type: object
-            properties:
-              _id:
-                type: string
-              _rev:
-                type: string
+            $ref: "#/definitions/Document"
+
+        '304':
+          description: The document wasn't modified since specified revision
+          schema:
+            $ref: "#/definitions/Error"
+
+        '400':
+          description: The format of the request or revision was invalid
+          schema:
+            $ref: "#/definitions/Error"
+
+        '401':
+          description: Read privilege required
+          schema:
+            $ref: "#/definitions/Error"
+
+        default:
+          description: Document not found
+          schema:
+            $ref: "#/definitions/Error"
